@@ -1,5 +1,8 @@
 # eslint-plugin-i18n-unused
 
+[![CI](https://github.com/rsmple/eslint-plugin-i18n-unused/actions/workflows/ci.yml/badge.svg)](https://github.com/rsmple/eslint-plugin-i18n-unused/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/rsmple/eslint-plugin-i18n-unused)](./LICENSE)
+
 Reports locale message keys that are never referenced from your source tree.
 
 A drop-in replacement for [`@intlify/vue-i18n/no-unused-keys`][intlify-rule] with
