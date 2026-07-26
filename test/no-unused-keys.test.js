@@ -37,6 +37,7 @@ ruleTester.run('no-unused-keys', rule, {
           fromTs: 'f',
           multiline: 'g',
           doubleQuoted: 'h',
+          atFileStart: 'i',
         },
       }),
     },

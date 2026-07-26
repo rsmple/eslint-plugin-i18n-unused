@@ -38,7 +38,7 @@
   "author": "rsmple",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rsmple/eslint-plugin-i18n-unused.git"
+    "url": "git+https://github.com/rsmple/eslint-plugin-i18n-unused.git"
   },
   "bugs": {
     "url": "https://github.com/rsmple/eslint-plugin-i18n-unused/issues"
