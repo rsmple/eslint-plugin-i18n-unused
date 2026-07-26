@@ -1,5 +1,6 @@
 # eslint-plugin-i18n-unused
 
+[![npm](https://img.shields.io/npm/v/eslint-plugin-i18n-unused)](https://www.npmjs.com/package/eslint-plugin-i18n-unused)
 [![CI](https://github.com/rsmple/eslint-plugin-i18n-unused/actions/workflows/ci.yml/badge.svg)](https://github.com/rsmple/eslint-plugin-i18n-unused/actions/workflows/ci.yml)
 [![license](https://img.shields.io/github/license/rsmple/eslint-plugin-i18n-unused)](./LICENSE)
 
