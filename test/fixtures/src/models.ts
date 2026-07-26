@@ -4,4 +4,5 @@ export const labels = {
     'used.multiline',
   ),
   double: t("used.doubleQuoted"),
+  templateLiteral: t(`used.templateLiteral`),
 }

@@ -38,8 +38,15 @@ ruleTester.run('no-unused-keys', rule, {
           multiline: 'g',
           doubleQuoted: 'h',
           atFileStart: 'i',
+          templateLiteral: 'j',
         },
       }),
+    },
+    {
+      name: 'ignores can target a key that needs bracket syntax',
+      filename: 'en.json',
+      options: ruleOptions({ignores: ['["hello {name}"]']}),
+      code: JSON.stringify({'hello {name}': 'a'}),
     },
     {
       name: 'a key reached only through a linked message on a used key is used',
@@ -126,6 +133,21 @@ ruleTester.run('no-unused-keys', rule, {
       options: ruleOptions({enableFix: true}),
       code: '{\n  "used": {"dollar": "a"},\n  "dead": "x"\n}',
       output: '{\n  "used": {"dollar": "a"}\n}',
+      errors: [unused('dead')],
+    },
+    {
+      name: 'a key containing spaces or braces reports with bracket syntax',
+      filename: 'en.json',
+      options: ruleOptions(),
+      code: JSON.stringify({'hello {name}': 'a', 'plain': 'b'}),
+      errors: [unused('["hello {name}"]', 2), unused('plain', 2)],
+    },
+    {
+      name: 'enableFix keeps a trailing comma intact',
+      filename: 'en.json',
+      options: ruleOptions({enableFix: true}),
+      code: '{\n  "dead": "x",\n  "used": {"dollar": "a"},\n}',
+      output: '{\n  "used": {"dollar": "a"},\n}',
       errors: [unused('dead')],
     },
     {
