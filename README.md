@@ -29,19 +29,26 @@ scan costs ~17ms, so it stays usable in an editor.
 npm i -D eslint-plugin-i18n-unused
 ```
 
-Requires ESLint 9+ and [`jsonc-eslint-parser`][jsonc] to parse the locale files.
+ESLint 9+. The rule lints the locale file itself, so ESLint needs a JSON parser
+for it — `@intlify/eslint-plugin-vue-i18n` and `eslint-plugin-jsonc` both
+configure [`jsonc-eslint-parser`][jsonc] already, so there is usually nothing
+else to install. See [below](#if-nothing-parses-your-locale-files-yet) if
+neither does.
 
 ## Usage
 
+This plugin ships a rule and nothing else — no config presets, no parser setup:
+
 ```js
 // eslint.config.js
+import vueI18n from '@intlify/eslint-plugin-vue-i18n'
 import i18nUnused from 'eslint-plugin-i18n-unused'
-import * as jsonParser from 'jsonc-eslint-parser'
 
 export default [
+  ...vueI18n.configs['flat/recommended'],
+
   {
-    files: ['locales/en-US.json'],
-    languageOptions: {parser: jsonParser},
+    files: ['./locales/en-US.json'],
     plugins: {'i18n-unused': i18nUnused},
     rules: {
       'i18n-unused/no-unused-keys': ['error', {
@@ -53,10 +60,31 @@ export default [
 ]
 ```
 
+No `languageOptions`: the rule reads whatever parser already handles the file.
+
 **Point it at one locale file, not all of them.** The rule scans your source
 tree once per file it lints, so matching three locales costs three scans for no
-extra signal — key parity between locales is a different rule's job (see
+extra signal — key parity is a different rule's job (see
 [`no-missing-keys-in-other-locales`][parity]).
+
+### If nothing parses your locale files yet
+
+```sh
+npm i -D jsonc-eslint-parser
+```
+
+```diff
++import * as jsonParser from 'jsonc-eslint-parser'
+
+   {
+     files: ['./locales/en-US.json'],
++    languageOptions: {parser: jsonParser},
+     plugins: {'i18n-unused': i18nUnused},
+```
+
+The symptom is ESLint failing before the rule ever runs, with
+`Parsing error: Unexpected token :` on the locale file — that is the default
+parser meeting JSON, which it cannot read at all.
 
 ## Options
 
@@ -72,30 +100,31 @@ string only.
 
 ### The `extensions` default will bite a TypeScript project
 
-`['.js', '.vue']` is inherited from the upstream rule for migration parity, and
-it does **not** include `.ts`. Leave it at the default in a TypeScript codebase
-and every key referenced only from a `.ts` file is reported as unused — and with
-`enableFix` enabled, deleted. Set it explicitly.
+`['.js', '.vue']` is inherited from the upstream rule for migration parity and
+does **not** include `.ts`. Leave it at the default in a TypeScript codebase and
+every key referenced only from a `.ts` file is reported as unused — and deleted,
+with `enableFix`. Set it explicitly.
 
 If `src` and `extensions` together match no files at all, the rule throws rather
 than reporting your entire locale file as dead.
 
 ## Migrating from `@intlify/vue-i18n/no-unused-keys`
 
-Swap the plugin and rename the rule. Nothing else moves — the options, message
-text and report positions are identical, so existing `ignores` entries and
-inline disable comments keep working.
+**Keep the intlify plugin** — this replaces one rule, not the plugin. Swap a
+single rule entry, and leave `languageOptions` alone: intlify already configures
+`jsonc-eslint-parser` for your locale files (wrapped in `vue-eslint-parser`,
+which this rule handles). Options, message text and report positions are
+identical, so existing `ignores` entries and inline disable comments keep
+working.
 
 ```diff
--import vueI18n from '@intlify/eslint-plugin-vue-i18n'
+ import vueI18n from '@intlify/eslint-plugin-vue-i18n'
 +import i18nUnused from 'eslint-plugin-i18n-unused'
- import * as jsonParser from 'jsonc-eslint-parser'
 
  export default [
+   ...vueI18n.configs['flat/recommended'],
    {
-     files: ['locales/en-US.json'],
-     languageOptions: {parser: jsonParser},
--    plugins: {'@intlify/vue-i18n': vueI18n},
+     files: ['./locales/en-US.json'],
 +    plugins: {'i18n-unused': i18nUnused},
      rules: {
 -      '@intlify/vue-i18n/no-unused-keys': ['error', {
@@ -110,16 +139,19 @@ inline disable comments keep working.
  ]
 ```
 
+Leave both rules on and every report appears twice, and you keep paying the AST
+cost you came here to avoid. Set the intlify rule to `'off'` if a shared config
+enables it for you.
+
 Two behavioural differences, both in this rule's favour:
 
 - **Autofix converges in one run.** Deleting an unused key can orphan another
   key that it referenced via `@:link`. This rule notices within the same fix
   pass; the upstream rule caches its scan and needs a second process to settle.
 - **Unparseable source files don't silently delete translations.** The upstream
-  rule parses every source file and swallows parse errors, treating a file it
-  can't read as containing zero keys — so a syntax error, an unconfigured
-  parser, or an unsupported dialect turns live keys into "unused" ones. A text
-  scan has no parse step to fail.
+  rule parses every source file and treats one it can't read as containing zero
+  keys, turning live keys into "unused" ones. A text scan has no parse step to
+  fail.
 
 ## What counts as usage
 
@@ -130,13 +162,25 @@ v-t="'key'"
 "@:key"   "@.lower:key"   "@:{'key'}"     // linked messages, resolved in-file
 ```
 
-Only static string literals are detected — the same limit the upstream rule has,
-since it also reads literal arguments only. Pair this with a `no-dynamic-keys`
-rule so computed keys can't slip past.
+Only static string literals are detected — the same limit the upstream rule has.
+Pair this with a `no-dynamic-keys` rule so computed keys can't slip past.
 
 Matching is deliberately over-inclusive: a false "used" costs you a missed
-report, while a false "unused" deletes a live translation. When a pattern is
-ambiguous, it matches.
+report, while a false "unused" deletes a live translation.
+
+## Limitations
+
+- **JSON and JSON5 only** (comments and trailing commas included). A YAML locale
+  file is skipped **silently** — zero reports, indistinguishable from "no unused
+  keys". Keep `@intlify/vue-i18n/no-unused-keys` for those.
+- **`<i18n>` blocks in SFCs are not checked**, also silently. Keys *used* in a
+  component are still found by the text scan; the block as a source of
+  *definitions* is what is unsupported.
+- **Commented-out calls count as usage** — `// t('old.key')` keeps `old.key`
+  alive. Locating comments is not cheap in a text scan, and the naive version is
+  dangerous: stripping `//` to end-of-line turns
+  `const url = 'https://x'; t('live.key')` into `const url = 'https:` and
+  deletes a live translation.
 
 ## Framework support
 
