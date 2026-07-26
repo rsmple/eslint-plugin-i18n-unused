@@ -1,0 +1,55 @@
+{
+  "name": "eslint-plugin-i18n-unused",
+  "version": "0.1.0",
+  "description": "Fast ESLint rule reporting unused i18n locale keys. Drop-in replacement for @intlify/vue-i18n/no-unused-keys, without the per-file AST parse.",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "i18n",
+    "internationalization",
+    "unused",
+    "unused-keys",
+    "locale",
+    "translations",
+    "vue-i18n",
+    "intlify"
+  ],
+  "license": "MIT",
+  "author": "rsmple",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rsmple/eslint-plugin-i18n-unused.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rsmple/eslint-plugin-i18n-unused/issues"
+  },
+  "homepage": "https://github.com/rsmple/eslint-plugin-i18n-unused#readme",
+  "peerDependencies": {
+    "eslint": ">=9",
+    "jsonc-eslint-parser": ">=2"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "jsonc-eslint-parser": "^2.4.0"
+  }
+}
