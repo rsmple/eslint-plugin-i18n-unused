@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-i18n-unused",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fast ESLint rule reporting unused i18n locale keys. Drop-in replacement for @intlify/vue-i18n/no-unused-keys, without the per-file AST parse.",
   "type": "module",
   "main": "./lib/index.js",
