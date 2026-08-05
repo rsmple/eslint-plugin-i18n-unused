@@ -23,9 +23,9 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
-      - run: npm i --no-save eslint@${{ matrix.eslint }}
+      - run: npm i --no-save --ignore-scripts eslint@${{ matrix.eslint }}
 
       - run: npm test
 
@@ -40,8 +40,8 @@ jobs:
           node-version: '20'
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
-      - run: npm i --no-save eslint@9.0.0 jsonc-eslint-parser@2.0.0
+      - run: npm i --no-save --ignore-scripts eslint@9.0.0 jsonc-eslint-parser@2.0.0
 
       - run: npm test
