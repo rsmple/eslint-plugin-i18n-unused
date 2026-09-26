@@ -94,6 +94,7 @@ parser meeting JSON, which it cannot read at all.
 | `src` | `string \| string[]` | `process.cwd()` | Directory to scan for key usage. |
 | `extensions` | `string[]` | `['.js', '.vue']` | File extensions to scan. |
 | `ignores` | `string[]` | `[]` | Keys never to report. A plain string matches exactly; `/pattern/flags` is a regular expression. |
+| `patterns` | `string[]` | `[]` | Extra usage patterns: regular expressions, as source or `/pattern/flags`, whose first capture group is a key. |
 | `enableFix` | `boolean` | `false` | Let `--fix` delete unused keys. Suggestions are offered either way. |
 
 `src` accepts an array as a superset of the upstream option, which takes a
@@ -161,6 +162,18 @@ $t('key')  t('key')  i18n.t('key')  tc('key')  tm('key')
 <I18nT keypath="key" />   <i18n path="key" />
 v-t="'key'"
 "@:key"   "@.lower:key"   "@:{'key'}"     // linked messages, resolved in-file
+```
+
+Keys used outside code, such as placeholders in Markdown docs, count once
+`patterns` describes them. Add the file type to `extensions` and the folder to
+`src`:
+
+```js
+{
+  src: ['./src', '../docs'],
+  extensions: ['.ts', '.js', '.vue', '.md'],
+  patterns: ['\\{\\{([\\w-]+(?:\\.[\\w-]+)+)\\}\\}'],  // {{links.store}}
+}
 ```
 
 Only static string literals are detected — the same limit the upstream rule has.

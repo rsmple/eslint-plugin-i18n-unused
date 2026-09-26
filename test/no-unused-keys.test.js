@@ -10,6 +10,8 @@ globalThis.it = it
 
 const SRC_WITH_USAGE = join(import.meta.dirname, 'fixtures/src')
 const SRC_WITHOUT_USAGE = join(import.meta.dirname, 'fixtures/empty')
+const DOCS = join(import.meta.dirname, 'fixtures/docs')
+const DOCS_PATTERN = '\\{\\{([\\w-]+(?:\\.[\\w-]+)+)\\}\\}'
 
 const ruleOptions = (extra = {}) => [{
   src: SRC_WITH_USAGE,
@@ -78,9 +80,35 @@ ruleTester.run('no-unused-keys', rule, {
       options: ruleOptions({ignores: ['/^dead\\./']}),
       code: JSON.stringify({dead: {one: '1', two: '2'}}),
     },
+    {
+      name: 'patterns count their first capture group as usage',
+      filename: 'en.json',
+      options: ruleOptions({src: [SRC_WITH_USAGE, DOCS], extensions: ['.ts', '.md'], patterns: [DOCS_PATTERN]}),
+      code: JSON.stringify({brand: {title: 'a'}, links: {repository: 'b'}}),
+    },
+    {
+      name: 'patterns accept the /pattern/flags form',
+      filename: 'en.json',
+      options: ruleOptions({src: DOCS, extensions: ['.md'], patterns: ['/\\{\\{(LINKS\\.[\\w]+)\\}\\}/i']}),
+      code: JSON.stringify({links: {repository: 'b'}}),
+    },
   ],
 
   invalid: [
+    {
+      name: 'keys in files matched only by a pattern stay unused without the pattern',
+      filename: 'en.json',
+      options: ruleOptions({src: DOCS, extensions: ['.md']}),
+      code: JSON.stringify({links: {repository: 'b'}}),
+      errors: [unused('links.repository')],
+    },
+    {
+      name: 'a pattern match outside the key shape is not usage',
+      filename: 'en.json',
+      options: ruleOptions({src: DOCS, extensions: ['.md'], patterns: [DOCS_PATTERN]}),
+      code: JSON.stringify({notAKey: 'x'}),
+      errors: [unused('notAKey')],
+    },
     {
       name: 'reports an unused top-level key',
       filename: 'en.json',
